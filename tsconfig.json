@@ -27,7 +27,8 @@
     "paths": {}
   },
   "include": [
-    "src"
+    "src/",
+    "example/"
   ],
   "exclude": [
     "node_modules"

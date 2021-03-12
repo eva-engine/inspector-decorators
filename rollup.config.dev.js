@@ -1,16 +1,54 @@
-const path = require('path');
-const rollup = require('rollup');
-const loadConfigFile = require('rollup/dist/loadConfigFile');
+import path from 'path';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from 'rollup-plugin-typescript2';
+import serve from 'rollup-plugin-serve';
+import livereload from 'rollup-plugin-livereload';
+import builtins from 'rollup-plugin-node-builtins';
+import globals from 'rollup-plugin-node-globals';
 
-loadConfigFile(path.resolve(__dirname, 'rollup.config.js')).then(async ({options, warnings}) => {
-  console.log(`We currently have ${warnings.count} warnings`);
+const publicDir = path.resolve(__dirname, 'public');
+const exampleDir = path.resolve(__dirname, 'example');
 
-  warnings.flush();
-
-  for (const optionsObj of options) {
-    const bundle = await rollup.rollup(optionsObj);
-    await Promise.all(optionsObj.output.map(bundle.write));
-  }
-
-  rollup.watch(options);
-});
+export default {
+  input: 'example/index.ts',
+  output: {
+    file: 'public/bundle.js',
+    format: 'iife',
+    globals: {
+      'pixi.js': 'PIXI',
+    },
+  },
+  external: ['pixi.js'],
+  plugins: [
+    globals(),
+    builtins(),
+    resolve({
+      browser: true,
+      mainFields: ['jsnext', 'esnext', 'module', 'main'],
+    }),
+    commonjs(),
+    typescript({
+      typescript: require('typescript'),
+      check: false,
+      tsconfig: path.resolve(__dirname, 'tsconfig.json'),
+      cacheRoot: path.resolve(__dirname, 'node_modules/.rts2_cache'),
+      objectHashIgnoreUnknownHack: true,
+      tsconfigOverride: {
+        compilerOptions: {
+          sourceMap: false,
+          declaration: false,
+          declarationMap: false,
+        },
+        exclude: ['**/__tests__'],
+      },
+    }),
+    serve({
+      open: true,
+      contentBase: publicDir,
+      host: 'localhost',
+      port: 8080,
+    }),
+    livereload(exampleDir),
+  ],
+};

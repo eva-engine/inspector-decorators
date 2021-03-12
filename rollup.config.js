@@ -16,7 +16,7 @@ const resolve = p => path.resolve(packageDir, p);
 const entryFile = resolve('src/index.ts');
 const pkg = require(resolve(`package.json`));
 const exampleDir = resolve('example');
-const evajszDistDir = resolve('dist');
+const evajsDistDir = resolve('dist');
 
 const outputConfigs = {
   esm: {
@@ -163,11 +163,11 @@ function createUmdDevelopConfig(format) {
       ...[
         serve({
           open: true,
-          contentBase: [exampleDir, evajszDistDir],
+          contentBase: [exampleDir, evajsDistDir],
           host: 'localhost',
           port: 8080,
         }),
-        livereload(evajsCDNDir),
+        livereload(evajsDistDir),
       ],
     );
   }
