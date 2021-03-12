@@ -21,11 +21,6 @@ selenium-debug.log
 
 # Distribution
 coverage/
-types/
-packages/**/dist/
-db.json
 coverage
-*-debug.log
 temp/
-api/
-stats.html
+dist/

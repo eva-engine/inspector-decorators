@@ -1,6 +1,13 @@
+import { Component } from '@eva/eva.js';
+import { System } from '@eva/eva.js';
 
-export declare function helloWorld(): string;
+export declare class DemoComponent extends Component {
+    static componentName: 'Demo';
+    readonly name = "Demo";
+}
+
+export declare class DemoSystem extends System {
+    readonly name: 'Demo';
+}
 
 export { }
-
-export declare function helloWorld(): string;

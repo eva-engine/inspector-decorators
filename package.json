@@ -15,6 +15,7 @@
     "plugin"
   ],
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.13.2",
     "@rollup/plugin-alias": "^3.1.1",
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-json": "^4.1.0",
@@ -57,5 +58,10 @@
   },
   "engines": {
     "node": ">=14.14.0"
+  },
+  "dependencies": {
+    "@eva/eva.js": "^1.0.0",
+    "@eva/plugin-renderer": "^1.0.0",
+    "@eva/renderer-adapter": "^1.0.0"
   }
 }
