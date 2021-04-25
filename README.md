@@ -23,4 +23,3 @@ run `npm run dev` first, then a page will open as `http://localhost:8080` in you
 
 - The name of this package must be prefixed with `eva-plugin-`
 - System must be export with suffix `System`
-- Component must be export with suffix `Component`
