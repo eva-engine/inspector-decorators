@@ -1,2 +1,3 @@
-export { default as Demo } from './component';
-export { default as DemoSystem } from './system';
+import type from './type';
+import step from './step';
+export {type, step};
