@@ -1,6 +1,6 @@
 {
   "name": "@eva/inspector-decorator",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "dev": "rollup -c rollup.config.dev.js -w",
     "build": "node ./scripts/build.js",
@@ -22,6 +22,7 @@
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
+    "@types/jest": "^26.0.24",
     "@types/pixi.js": "^4.8.9",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
@@ -61,7 +62,5 @@
   },
   "engines": {
     "node": ">=14.14.0"
-  },
-  "dependencies": {
   }
 }

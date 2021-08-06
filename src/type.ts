@@ -1,16 +1,10 @@
+import { getIDEPropsPropertyObj } from './util';
+
 export default function type(type: string) {
-  return function(target: any, propertyKey: string) {
+  return function (target: any, propertyKey: string) {
+    const prop = getIDEPropsPropertyObj(target, propertyKey);
     //@ts-ignore
-    if (!target.constructor.IDEProps) {
-      //@ts-ignore
-      target.constructor.IDEProps = {}
-    }
-    if (!target.constructor.IDEProps[propertyKey]) {
-      target.constructor.IDEProps[propertyKey] = {}
-    }
-    const prop = target.constructor.IDEProps[propertyKey]
-    //@ts-ignore
-    prop.key = propertyKey
-    prop.type = type
-  }
+    prop.key = propertyKey;
+    prop.type = type;
+  };
 }
