@@ -20,8 +20,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
 const execa = require('execa');
-const {gzipSync} = require('zlib');
-const {compress} = require('brotli');
 
 const args = require('minimist')(process.argv.slice(2));
 const formats = args.formats || args.f;
@@ -41,7 +39,6 @@ async function run() {
     await fs.remove(path.resolve(__dirname, '../node_modules/.rts2_cache'));
   }
   await build();
-  checkFileSize(`${pkgDir}/dist/index.global.js`);
 }
 
 async function build() {
@@ -91,17 +88,4 @@ async function build() {
 
     await fs.remove(`${pkgDir}/dist/src`);
   }
-}
-
-function checkFileSize(filePath) {
-  if (!fs.existsSync(filePath)) return;
-  const file = fs.readFileSync(filePath);
-  const minSize = (file.length / 1024).toFixed(2) + 'kb';
-  const gzipped = gzipSync(file);
-  const gzippedSize = (gzipped.length / 1024).toFixed(2) + 'kb';
-  const compressed = compress(file);
-  const compressedSize = (compressed.length / 1024).toFixed(2) + 'kb';
-  console.log(
-    `${chalk.gray(chalk.bold(path.basename(filePath)))} min:${minSize} / gzip:${gzippedSize} / brotli:${compressedSize}`,
-  );
 }
