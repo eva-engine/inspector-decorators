@@ -11,3 +11,4 @@ test/
 rollup.config.js
 tsconfig.json
 !*.d.ts
+package-lock.json
