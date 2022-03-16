@@ -38,6 +38,11 @@ class DynamicProperties {
   }
 }
 
+class NestDynamicProperties {
+  @Field(() => DynamicProperties)
+  dyn: DynamicProperties;
+}
+
 class Vector2 {
   @Field()
   x: number;
@@ -169,4 +174,22 @@ describe('should Field works', () => {
     expect(attrs2.x.type).toBe('string');
     expect(attrs2.y.type).toBe('string');
   });
+
+  test('should nested dynamic properties', () => {
+    const attrs = getPropertiesOf(NestDynamicProperties);
+    const dyn = new DynamicProperties('basic');
+    expect(typeof attrs.dyn.type).toBe('function');
+    const data = (attrs.dyn.type as any)(dyn);
+    expect(data.x.type).toBe('string');
+    expect(data.y).toBe(undefined);
+    const dyn2 = new DynamicProperties('base');
+    const data2 = (attrs.dyn.type as any)(dyn2);
+    expect(data2.x.type).toBe('string');
+    expect(data2.y.type).toBe('string');
+  });
 });
+
+// class A {}
+// const a = new A();
+// type C = typeof A;
+// type B = InstanceType<C>;
