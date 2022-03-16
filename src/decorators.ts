@@ -18,16 +18,21 @@ function transformBasicType(type: unknown): 'string' | 'number' | 'boolean' | 'u
 function defineTypes(target: any, key: string | symbol, options: FieldOptions, returnTypeFunction?: ReturnTypeFunc) {
   let type = Reflect.getMetadata('design:type', target, key);
   const isArray = type === Array;
-  let str: any = transformBasicType(type);
-  if (returnTypeFunction) {
-    type = returnTypeFunction();
+  const str = transformBasicType(type);
+  if (str !== 'unknown') {
+    type = str;
   }
-  if (str === 'unknown') {
-    str = type;
+  if (returnTypeFunction) {
+    const returnType = returnTypeFunction();
+    if (Array.isArray(returnType)) {
+      type = returnType[0];
+    } else {
+      type = returnType;
+    }
   }
   const properties = Reflect.getMetadata(IDE_PROPERTY_METADATA, target.constructor) || {};
   properties[key] = {
-    type: str,
+    type,
     isArray: isArray,
     ...options,
   };
@@ -67,11 +72,15 @@ export function getPropertiesOf<T extends ClassType<any>>(target: T): FieldMetad
   const properties = Reflect.getMetadata(IDE_PROPERTY_METADATA, target) || {};
   Object.keys(properties).forEach(propertyKey => {
     if (typeof properties[propertyKey].type === 'function') {
-      const maybeBasicType = transformBasicType(properties[propertyKey].type);
-      if (maybeBasicType !== 'unknown') {
-        properties[propertyKey].type = maybeBasicType;
+      if ('getProperties' in properties[propertyKey].type) {
+        properties[propertyKey].type = properties[propertyKey].type.getProperties();
       } else {
-        properties[propertyKey].type = getPropertiesOf(properties[propertyKey].type);
+        const maybeBasicType = transformBasicType(properties[propertyKey].type);
+        if (maybeBasicType !== 'unknown') {
+          properties[propertyKey].type = maybeBasicType;
+        } else {
+          properties[propertyKey].type = getPropertiesOf(properties[propertyKey].type);
+        }
       }
     }
   });
