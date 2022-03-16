@@ -1,13 +1,40 @@
-import {getPropertiesOf, Field} from '..';
+import {getPropertiesOf, Field, FieldMetadata} from '..';
 
+function isFunction(val: unknown): val is Function {
+  return typeof val === 'function';
+}
+
+function isObject(val: unknown): val is object {
+  return typeof val === 'object';
+}
 class Option {
   @Field({step: 1, min: 1, max: 100})
   a: number;
 }
 
 class Resource {
-  static getProperties() {
+  static getProperties(): FieldMetadata<Resource> {
     return 'resource';
+  }
+}
+
+class DynamicProperties {
+  // eslint-disable-next-line
+  constructor(protected type: string) {
+    //
+  }
+
+  public x!: string;
+  public y?: string;
+
+  static getProperties(): (target: any) => FieldMetadata<DynamicProperties> {
+    return target => {
+      if (target.type === 'base') {
+        return {x: {type: 'string', isArray: false}, y: {type: 'string', isArray: false}};
+      } else {
+        return {x: {type: 'string', isArray: false}};
+      }
+    };
   }
 }
 
@@ -76,6 +103,7 @@ class Override {
 describe('should Field works', () => {
   test('should attach basic types', () => {
     const attrs = getPropertiesOf(Test);
+    expect(isObject(attrs)).toBe(true);
     expect(attrs.bool.type).toBe('boolean');
     expect(attrs.bool.isArray).toBe(false);
     expect(attrs.num.type).toBe('number');
@@ -125,5 +153,20 @@ describe('should Field works', () => {
     expect(attrs.position3.type.y.type).toBe('number');
     expect(attrs.position3.type.z.type).toBe('number');
     expect(attrs.position3.type.z.step).toBe(1);
+  });
+
+  test('should support dynamic properties', () => {
+    const getAttrsFunc = getPropertiesOf(DynamicProperties);
+    expect(isFunction(getAttrsFunc)).toBe(true);
+    const d1 = new DynamicProperties('basic');
+    const d2 = new DynamicProperties('base');
+    const attrs1 = getAttrsFunc(d1);
+    const attrs2 = getAttrsFunc(d2);
+
+    expect(attrs1.x.type).toBe('string');
+    expect(attrs1.y).toBe(undefined);
+
+    expect(attrs2.x.type).toBe('string');
+    expect(attrs2.y.type).toBe('string');
   });
 });
