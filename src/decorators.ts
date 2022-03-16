@@ -1,6 +1,18 @@
-import {TypeDecoratorParams, ReturnTypeFunc, FieldOptions, ClassType, FieldMetadata} from './interface';
-import {SymbolKeysNotSupportedError} from './exceptions';
+import {
+  TypeDecoratorParams,
+  ReturnTypeFunc,
+  FieldOptions,
+  ClassType,
+  FieldMetadata,
+  ReturnTypeAsync,
+  StaticGetProperties,
+} from './interface';
+import {SymbolKeysNotSupportedError, StaticGetPropertiesIsNotAFunctionError} from './exceptions';
 import {IDE_PROPERTY_METADATA} from './constants';
+
+function isFunction(val: unknown): val is Function {
+  return typeof val === 'function';
+}
 
 function transformBasicType(type: unknown): 'string' | 'number' | 'boolean' | 'unknown' {
   if (type === String) {
@@ -68,19 +80,27 @@ export function Field(returnTypeFunction?: ReturnTypeFunc | FieldOptions, maybeO
   };
 }
 
-export function getPropertiesOf<T extends ClassType<any>>(target: T): FieldMetadata<InstanceType<T>> {
+export function getPropertiesOf<
+  T extends ClassType<any> & {
+    getProperties?: StaticGetProperties<T>;
+  },
+>(
+  target: T,
+): T['getProperties'] extends StaticGetProperties<T> ? ReturnTypeAsync<T['getProperties']> : FieldMetadata<InstanceType<T>> {
+  if ('getProperties' in target) {
+    if (!isFunction(target['getProperties'])) {
+      throw new StaticGetPropertiesIsNotAFunctionError();
+    }
+    return target.getProperties() as any;
+  }
   const properties = Reflect.getMetadata(IDE_PROPERTY_METADATA, target) || {};
   Object.keys(properties).forEach(propertyKey => {
     if (typeof properties[propertyKey].type === 'function') {
-      if ('getProperties' in properties[propertyKey].type) {
-        properties[propertyKey].type = properties[propertyKey].type.getProperties();
+      const maybeBasicType = transformBasicType(properties[propertyKey].type);
+      if (maybeBasicType !== 'unknown') {
+        properties[propertyKey].type = maybeBasicType;
       } else {
-        const maybeBasicType = transformBasicType(properties[propertyKey].type);
-        if (maybeBasicType !== 'unknown') {
-          properties[propertyKey].type = maybeBasicType;
-        } else {
-          properties[propertyKey].type = getPropertiesOf(properties[propertyKey].type);
-        }
+        properties[propertyKey].type = getPropertiesOf(properties[propertyKey].type);
       }
     }
   });

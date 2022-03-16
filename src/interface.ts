@@ -29,7 +29,7 @@ export interface TypeDecoratorParams {
   options: FieldOptions;
 }
 
-interface FieldMetadataInner<T> extends NumberOptions {
+export interface FieldMetadataInner<T> extends NumberOptions {
   type: T extends number
     ? 'number'
     : T extends string
@@ -45,3 +45,12 @@ interface FieldMetadataInner<T> extends NumberOptions {
 export type FieldMetadata<T extends Record<string, any>> = {
   [K in keyof T]: FieldMetadataInner<T[K]>;
 };
+
+export type ReturnTypeAsync<T extends (...args: any) => any> = T extends (...args: any) => Promise<infer R>
+  ? R
+  : T extends (...args: any) => infer R
+  ? R
+  : any;
+
+export type DynamicGetProperties<T extends ClassType<any>> = (target?: InstanceType<T>) => FieldMetadata<InstanceType<T>>;
+export type StaticGetProperties<T extends ClassType<any>> = () => DynamicGetProperties<T> | FieldMetadata<InstanceType<T>>;
