@@ -1,3 +1,4 @@
-import type from './type';
-import step from './step';
-export {type, step};
+import 'reflect-metadata';
+
+export * from './decorators';
+export * from './interface';
