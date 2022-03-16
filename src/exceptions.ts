@@ -5,3 +5,11 @@ export class SymbolKeysNotSupportedError extends Error {
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
+
+export class StaticGetPropertiesIsNotAFunctionError extends Error {
+  constructor() {
+    super('getProperties is not a function!');
+
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
