@@ -69,6 +69,7 @@ function getTypeDecoratorParams(
 export function Field(): PropertyDecorator;
 export function Field(options: FieldOptions): PropertyDecorator;
 export function Field(returnTypeFunction?: ReturnTypeFunc): PropertyDecorator;
+export function Field(returnTypeFunction?: ReturnTypeFunc | FieldOptions, maybeOptions?: FieldOptions): PropertyDecorator;
 export function Field(returnTypeFunction?: ReturnTypeFunc | FieldOptions, maybeOptions?: FieldOptions): PropertyDecorator {
   return (target, propertyKey) => {
     if (typeof propertyKey === 'symbol') {
