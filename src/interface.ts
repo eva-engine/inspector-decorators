@@ -19,9 +19,8 @@ interface NumberOptions {
   step?: number;
 }
 
-// eslint-disable-next-line
 export interface FieldOptions extends NumberOptions {
-  //
+  type?: string;
 }
 
 export interface TypeDecoratorParams {
