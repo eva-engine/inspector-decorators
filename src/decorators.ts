@@ -29,7 +29,7 @@ function transformBasicType(type: unknown): 'string' | 'number' | 'boolean' | 'u
 
 function defineTypes(target: any, key: string | symbol, options: FieldOptions, returnTypeFunction?: ReturnTypeFunc) {
   let type = Reflect.getMetadata('design:type', target, key);
-  const isArray = type === Array;
+  let isArray = type === Array;
   const str = transformBasicType(type);
   if (str !== 'unknown') {
     type = str;
@@ -37,6 +37,8 @@ function defineTypes(target: any, key: string | symbol, options: FieldOptions, r
   if (returnTypeFunction) {
     const returnType = returnTypeFunction();
     if (Array.isArray(returnType)) {
+      isArray = true;
+      // not support Tuples yet
       type = returnType[0];
     } else {
       type = returnType;
