@@ -105,6 +105,11 @@ class Override {
   position3: VectorOverride;
 }
 
+class OverrideType {
+  @Field({type: 'textarea'})
+  text: string;
+}
+
 describe('should Field works', () => {
   test('should attach basic types', () => {
     const attrs = getPropertiesOf(Test);
@@ -187,9 +192,9 @@ describe('should Field works', () => {
     expect(data2.x.type).toBe('string');
     expect(data2.y.type).toBe('string');
   });
-});
 
-// class A {}
-// const a = new A();
-// type C = typeof A;
-// type B = InstanceType<C>;
+  test('should override type', () => {
+    const attrs = getPropertiesOf(OverrideType);
+    expect(attrs.text.type).toBe('textarea');
+  });
+});
