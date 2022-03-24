@@ -110,6 +110,46 @@ class OverrideType {
   text: string;
 }
 
+class ReturnTypeArray {
+  @Field(() => [Number])
+  nums: number[] | number | string | string[];
+}
+
+class AnyField {
+  @Field({bool: true})
+  test: string;
+}
+
+const intFilter = (val: any) => {
+  let num = 0;
+  if (typeof val === 'number') {
+    num = val;
+  } else if (typeof val === 'string') {
+    let maybeNumber = Number(val);
+    if (isNaN(maybeNumber)) {
+      return 0;
+    }
+    num = maybeNumber;
+  }
+  return Math.round(num);
+};
+
+const addOneFilter = (val: number): number => {
+  return val + 1;
+};
+
+class Filter {
+  @Field({
+    filter: intFilter,
+  })
+  int: number;
+
+  @Field({
+    filters: [intFilter, addOneFilter],
+  })
+  int2: number;
+}
+
 describe('should Field works', () => {
   test('should attach basic types', () => {
     const attrs = getPropertiesOf(Test);
@@ -196,5 +236,35 @@ describe('should Field works', () => {
   test('should override type', () => {
     const attrs = getPropertiesOf(OverrideType);
     expect(attrs.text.type).toBe('textarea');
+  });
+
+  test('should support return type array', () => {
+    const attrs = getPropertiesOf(ReturnTypeArray);
+    expect(attrs.nums.isArray).toBe(true);
+    expect(attrs.nums.type).toBe('number');
+  });
+
+  test('should support any field options', () => {
+    const attrs = getPropertiesOf(AnyField);
+    expect(attrs.test.bool).toBe(true);
+    expect(attrs.test.type).toBe('string');
+  });
+
+  test('should support filter', () => {
+    const attrs = getPropertiesOf(Filter);
+    expect(attrs.int.type).toBe('number');
+    const filterFn = attrs.int.filter;
+    expect(isFunction(filterFn)).toBe(true);
+    expect(filterFn('test')).toBe(0);
+    expect(filterFn(1.1)).toBe(1);
+    expect(filterFn(1.9)).toBe(2);
+
+    expect(attrs.int2.type).toBe('number');
+    const filters = attrs.int2.filters;
+    expect(Array.isArray(filters)).toBe(true);
+    const filterBatch = (val: any) => filters.reduce((prev, fn) => fn(prev), val);
+    expect(filterBatch('test')).toBe(1);
+    expect(filterBatch(1.1)).toBe(2);
+    expect(filterBatch(1.9)).toBe(3);
   });
 });
