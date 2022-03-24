@@ -19,8 +19,18 @@ interface NumberOptions {
   step?: number;
 }
 
-export interface FieldOptions extends NumberOptions {
+export interface FieldOptions extends NumberOptions, FillterOptions, FilltersOptions, AnyOptions {
   type?: string;
+}
+
+type AnyOptions = Record<string, any>;
+
+export interface FillterOptions {
+  filter?(val: any): any;
+}
+
+export interface FilltersOptions {
+  filters?: ((val: any) => any)[];
 }
 
 export interface TypeDecoratorParams {
@@ -28,7 +38,7 @@ export interface TypeDecoratorParams {
   options: FieldOptions;
 }
 
-export interface FieldMetadataInner<T> extends NumberOptions {
+export interface FieldMetadataInner<T> extends NumberOptions, FillterOptions, FilltersOptions, AnyOptions {
   type: T extends number
     ? 'number'
     : T extends string
