@@ -8,7 +8,7 @@ import {
   StaticGetProperties,
 } from './interface';
 import {SymbolKeysNotSupportedError, StaticGetPropertiesIsNotAFunctionError} from './exceptions';
-import {IDE_PROPERTY_METADATA} from './constants';
+import {IDE_PROPERTY_METADATA, COMPONENT_EXECUTE_MODE_METADATA} from './constants';
 
 function isFunction(val: unknown): val is Function {
   return typeof val === 'function';
@@ -109,3 +109,18 @@ export function getPropertiesOf<
   });
   return properties;
 }
+
+enum ExecuteMode {
+  Edit = 1 << 1,
+  Game = 1 << 2,
+  All = Edit | Game,
+}
+
+export const ExecuteInEditMode: ClassDecorator = target => {
+  Reflect.defineMetadata(COMPONENT_EXECUTE_MODE_METADATA, ExecuteMode.Edit, target);
+};
+
+export const shouldExecuteInEditMode = (target: ClassType): boolean => {
+  const mode = Reflect.getMetadata(COMPONENT_EXECUTE_MODE_METADATA, target);
+  return !!(mode & ExecuteMode.Edit);
+};
