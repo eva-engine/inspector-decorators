@@ -1,4 +1,4 @@
-import {getPropertiesOf, Field, FieldMetadata} from '..';
+import {getPropertiesOf, Field, FieldMetadata, ExecuteInEditMode, shouldExecuteInEditMode} from '..';
 
 function isFunction(val: unknown): val is Function {
   return typeof val === 'function';
@@ -150,6 +150,9 @@ class Filter {
   int2: number;
 }
 
+@ExecuteInEditMode
+class ExecuteInEdit {}
+
 describe('should Field works', () => {
   test('should attach basic types', () => {
     const attrs = getPropertiesOf(Test);
@@ -266,5 +269,10 @@ describe('should Field works', () => {
     expect(filterBatch('test')).toBe(1);
     expect(filterBatch(1.1)).toBe(2);
     expect(filterBatch(1.9)).toBe(3);
+  });
+
+  test('should execute in editor', () => {
+    expect(shouldExecuteInEditMode(ExecuteInEdit)).toBe(true);
+    expect(shouldExecuteInEditMode(Vector2)).toBe(false);
   });
 });
