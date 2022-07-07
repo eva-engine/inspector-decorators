@@ -38,28 +38,17 @@ export interface TypeDecoratorParams {
   options: FieldOptions;
 }
 
-export interface FieldMetadataInner<T> extends NumberOptions, FillterOptions, FilltersOptions, AnyOptions {
-  type: T extends number
-    ? 'number'
-    : T extends string
-    ? 'string'
-    : T extends boolean
-    ? 'boolean'
-    : T extends Record<string, any>
-    ? FieldMetadata<T>
-    : string;
+export interface FieldMetadata extends NumberOptions, FillterOptions, FilltersOptions, AnyOptions {
+  name: string;
+  type: string;
+  children?: FieldMetadata[];
+  isFolder?: boolean;
   isArray: boolean;
+  addable?: boolean;
 }
-
-export type FieldMetadata<T extends Record<string, any>> = {
-  [K in keyof T]: FieldMetadataInner<T[K]>;
-};
 
 export type ReturnTypeAsync<T extends (...args: any) => any> = T extends (...args: any) => Promise<infer R>
   ? R
   : T extends (...args: any) => infer R
   ? R
   : any;
-
-export type DynamicGetProperties<T extends ClassType<any>> = (target?: InstanceType<T>) => FieldMetadata<InstanceType<T>>;
-export type StaticGetProperties<T extends ClassType<any>> = () => DynamicGetProperties<T> | FieldMetadata<InstanceType<T>>;
