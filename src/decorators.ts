@@ -1,13 +1,5 @@
-import {
-  TypeDecoratorParams,
-  ReturnTypeFunc,
-  FieldOptions,
-  ClassType,
-  FieldMetadata,
-  ReturnTypeAsync,
-  StaticGetProperties,
-} from './interface';
-import {SymbolKeysNotSupportedError, StaticGetPropertiesIsNotAFunctionError} from './exceptions';
+import {TypeDecoratorParams, ReturnTypeFunc, FieldOptions, ClassType, FieldMetadata} from './interface';
+import {SymbolKeysNotSupportedError} from './exceptions';
 import {IDE_PROPERTY_METADATA, COMPONENT_EXECUTE_MODE_METADATA} from './constants';
 
 function isFunction(val: unknown): val is Function {
@@ -85,29 +77,48 @@ export function Field(returnTypeFunction?: ReturnTypeFunc | FieldOptions, maybeO
 
 export function getPropertiesOf<
   T extends ClassType<any> & {
-    getProperties?: StaticGetProperties<T>;
+    componentName?: string;
   },
->(
-  target: T,
-): T['getProperties'] extends StaticGetProperties<T> ? ReturnTypeAsync<T['getProperties']> : FieldMetadata<InstanceType<T>> {
-  if ('getProperties' in target) {
-    if (!isFunction(target['getProperties'])) {
-      throw new StaticGetPropertiesIsNotAFunctionError();
-    }
-    return target.getProperties() as any;
-  }
+>(target: T, isRoot = true): FieldMetadata {
   const properties = Reflect.getMetadata(IDE_PROPERTY_METADATA, target) || {};
+  const name = target.componentName;
+  const rootObject: FieldMetadata = {
+    name,
+    type: name,
+    isArray: false,
+  };
+  if (isRoot) {
+    rootObject.isFolder = true;
+  }
+  if (!Object.keys(properties).length && target.componentName) {
+    return rootObject;
+  }
+
+  rootObject.type = 'object';
+  rootObject.children = [];
   Object.keys(properties).forEach(propertyKey => {
-    if (typeof properties[propertyKey].type === 'function') {
+    if (isFunction(properties[propertyKey].type)) {
       const maybeBasicType = transformBasicType(properties[propertyKey].type);
       if (maybeBasicType !== 'unknown') {
         properties[propertyKey].type = maybeBasicType;
       } else {
-        properties[propertyKey].type = getPropertiesOf(properties[propertyKey].type);
+        const child = getPropertiesOf(properties[propertyKey].type, false);
+        properties[propertyKey].type = 'object';
+        if (!properties[propertyKey].children) {
+          properties[propertyKey].children = [];
+        }
+        properties[propertyKey].children.push(...child.children);
       }
     }
+    if (!properties[propertyKey].name) {
+      properties[propertyKey].name = propertyKey;
+    }
+    if (properties[propertyKey].isArray) {
+      properties[propertyKey].addable = true;
+    }
+    rootObject.children.push(properties[propertyKey]);
   });
-  return properties;
+  return rootObject;
 }
 
 enum ExecuteMode {
