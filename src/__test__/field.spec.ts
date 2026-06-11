@@ -1,4 +1,4 @@
-import {getPropertiesOf, Field} from '..';
+import {getPropertiesOf, Field, step, type} from '..';
 
 class Mask {
   static componentName = 'Mask';
@@ -17,6 +17,9 @@ class Text {
 
   @Field(() => Style)
   style: Style[];
+
+  @Field(() => [Style])
+  styleList: Style[];
 }
 
 describe('test @Field', () => {
@@ -39,5 +42,32 @@ describe('test @Field', () => {
     expect(data.children[1].children[0].isArray).toBe(true);
     expect(data.children[1].children[0].name).toBe('colors');
     expect(data.children[1].children[0].addable).toBe(true);
+
+    expect(data.children[2].type).toBe('object');
+    expect(data.children[2].name).toBe('styleList');
+    expect(data.children[2].isArray).toBe(true);
+    expect(data.children[2].addable).toBe(true);
+    expect(data.children[2].children[0].type).toBe('color');
+    expect(data.children[2].children[0].isArray).toBe(true);
+    expect(data.children[2].children[0].name).toBe('colors');
+    expect(data.children[2].children[0].addable).toBe(true);
+  });
+
+  it('should keep legacy @type and @step IDEProps compatibility', () => {
+    class Transform {
+      static IDEProps: any = {};
+
+      @type('vector2')
+      @step(1)
+      position = {x: 0, y: 0};
+    }
+
+    expect(Transform.IDEProps).toEqual({
+      position: {
+        key: 'position',
+        type: 'vector2',
+        step: 1,
+      },
+    });
   });
 });

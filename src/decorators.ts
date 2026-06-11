@@ -19,6 +19,17 @@ function transformBasicType(type: unknown): 'string' | 'number' | 'boolean' | 'u
   return 'unknown';
 }
 
+function defineLegacyIDEProp(target: any, propertyKey: string, patch: Record<string, unknown>) {
+  const constructor = target.constructor as {IDEProps?: Record<string, Record<string, unknown>>};
+  const current = constructor.IDEProps || {};
+  current[propertyKey] = {
+    key: propertyKey,
+    ...current[propertyKey],
+    ...patch,
+  };
+  constructor.IDEProps = current;
+}
+
 function defineTypes(target: any, key: string | symbol, options: FieldOptions, returnTypeFunction?: ReturnTypeFunc) {
   let type = Reflect.getMetadata('design:type', target, key);
   let isArray = type === Array;
@@ -37,12 +48,25 @@ function defineTypes(target: any, key: string | symbol, options: FieldOptions, r
     }
   }
   const properties = Reflect.getMetadata(IDE_PROPERTY_METADATA, target.constructor) || {};
-  properties[key] = {
+  const current = properties[key] || {};
+  const property = {
+    ...current,
     type,
     isArray: isArray,
     ...options,
   };
+  properties[key] = property;
   Reflect.defineMetadata(IDE_PROPERTY_METADATA, properties, target.constructor);
+  const {isArray: _isArray, ...legacyProperty} = property;
+  defineLegacyIDEProp(target, key as string, legacyProperty);
+}
+
+export function type(type: string) {
+  return Field({type});
+}
+
+export function step(step: number) {
+  return Field({step});
 }
 
 function getTypeDecoratorParams(
