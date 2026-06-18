@@ -24,3 +24,5 @@ coverage/
 coverage
 temp/
 dist/
+
+**/production/session-logs/
